@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LUNA — Tarot Reading</title>
+  <meta name="description" content="Intuitive tarot readings for clarity, reflection, and direction." />
+  <style>
+    :root{
+      --bg:#f7f4ef;
+      --text:#24211e;
+      --muted:#77716a;
+      --line:#ddd7cf;
+      --card:#eee9e1;
+      --accent:#40382f;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{
+      font-family: Georgia, "Times New Roman", serif;
+      background:var(--bg);
+      color:var(--text);
+      line-height:1.6;
+    }
+    a{color:inherit;text-decoration:none}
+    .nav{
+      max-width:1100px;margin:auto;padding:28px 28px;
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .logo{font-size:20px;letter-spacing:.18em}
+    .navlinks{display:flex;gap:28px;font-family:Arial,sans-serif;font-size:13px}
+    .navlinks a{color:var(--muted)}
+    .navlinks a:hover{color:var(--text)}
+    .hero{
+      min-height:78vh;max-width:1100px;margin:auto;padding:70px 28px 100px;
+      display:grid;grid-template-columns:1.2fr .8fr;gap:70px;align-items:center;
+    }
+    .eyebrow{
+      font-family:Arial,sans-serif;text-transform:uppercase;
+      letter-spacing:.18em;font-size:11px;color:var(--muted);margin-bottom:20px;
+    }
+    h1{font-size:clamp(54px,8vw,94px);font-weight:400;line-height:.95;letter-spacing:-.04em}
+    .hero p{max-width:510px;color:var(--muted);font-size:18px;margin:28px 0}
+    .button{
+      display:inline-block;background:var(--accent);color:#fff;
+      padding:14px 23px;border-radius:2px;font-family:Arial,sans-serif;
+      font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+    }
+    .button:hover{opacity:.86}
+    .moon{
+      width:min(330px,70vw);aspect-ratio:1;border:1px solid var(--line);
+      border-radius:50%;margin:auto;position:relative;
+      display:grid;place-items:center;
+    }
+    .moon:before{
+      content:"";width:180px;height:180px;border-radius:50%;
+      background:var(--card);position:absolute;left:65px;top:50px;
+    }
+    .moon span{position:relative;font-size:90px;color:var(--accent)}
+    section{border-top:1px solid var(--line)}
+    .section-inner{max-width:1100px;margin:auto;padding:90px 28px}
+    .section-head{display:flex;justify-content:space-between;gap:30px;margin-bottom:45px}
+    h2{font-size:42px;font-weight:400;line-height:1.05}
+    .section-head p{max-width:400px;color:var(--muted);font-family:Arial,sans-serif;font-size:14px}
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .card{background:var(--card);padding:32px;min-height:230px;display:flex;flex-direction:column;justify-content:space-between}
+    .number{font-family:Arial,sans-serif;font-size:11px;color:var(--muted)}
+    .card h3{font-size:25px;font-weight:400;margin-top:35px}
+    .price{font-family:Arial,sans-serif;font-size:13px;color:var(--muted)}
+    .about{display:grid;grid-template-columns:1fr 1fr;gap:80px}
+    .about p{font-size:20px;max-width:570px}
+    .note{font-family:Arial,sans-serif;font-size:13px;color:var(--muted);padding-top:8px}
+    .cta{text-align:center}
+    .cta h2{max-width:600px;margin:0 auto 28px}
+    footer{
+      max-width:1100px;margin:auto;padding:30px 28px 45px;
+      display:flex;justify-content:space-between;font-family:Arial,sans-serif;
+      font-size:11px;color:var(--muted)
+    }
+    @media(max-width:750px){
+      .navlinks{display:none}
+      .hero{grid-template-columns:1fr;min-height:auto;padding-top:50px}
+      .moon{width:240px;margin-top:10px}
+      .moon:before{width:130px;height:130px;left:48px;top:37px}
+      .moon span{font-size:65px}
+      .cards,.about{grid-template-columns:1fr}
+      .section-head{display:block}
+      .section-head p{margin-top:18px}
+      h2{font-size:36px}
+      footer{display:block}
+      footer span{display:block;margin-top:8px}
+    }
+  
+    /* Dynamic interactions */
+    .card { cursor:pointer; transition:transform .25s ease, background .25s ease; }
+    .card:hover { transform:translateY(-5px); }
+    .card.selected { outline:1px solid var(--accent); background:#e7e0d7; }
+    .draw-area { margin-top:55px; display:grid; grid-template-columns:180px 1fr; gap:35px; align-items:center; }
+    .tarot-card {
+      width:180px; height:285px; border:1px solid #cfc7bd; background:#e7e0d7;
+      display:grid; place-items:center; cursor:pointer; position:relative; overflow:hidden;
+      transition:transform .45s ease;
+    }
+    .tarot-card:hover { transform:translateY(-7px) rotate(-1deg); }
+    .tarot-card .back { font-size:52px; }
+    .tarot-card.revealed { background:#f8f5ef; }
+    .tarot-card.revealed .back { display:none; }
+    .tarot-card .face { display:none; text-align:center; padding:20px; }
+    .tarot-card.revealed .face { display:block; }
+    .face-symbol { font-size:48px; margin-bottom:12px; }
+    .draw-copy h3 { font-size:29px; font-weight:400; margin-bottom:8px; }
+    .draw-copy p { color:var(--muted); max-width:560px; }
+    .small-button {
+      margin-top:18px; border:1px solid var(--line); background:transparent; padding:11px 17px;
+      font-family:Arial,sans-serif; font-size:11px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer;
+    }
+    .small-button:hover { background:var(--card); }
+    .modal {
+      position:fixed; inset:0; background:rgba(36,33,30,.42); display:none; place-items:center;
+      z-index:20; padding:20px;
+    }
+    .modal.open { display:grid; }
+    .modal-box { width:min(520px,100%); background:var(--bg); padding:34px; position:relative; box-shadow:0 20px 70px rgba(0,0,0,.15); }
+    .close { position:absolute; right:18px; top:14px; border:0; background:none; font-size:24px; cursor:pointer; }
+    .modal-box h3 { font-size:31px; font-weight:400; margin-bottom:7px; }
+    .modal-box p { color:var(--muted); margin-bottom:20px; }
+    .form { display:grid; gap:12px; }
+    .form input, .form textarea {
+      width:100%; border:1px solid var(--line); background:transparent; padding:13px;
+      font:14px Arial,sans-serif; outline:none;
+    }
+    .form textarea { min-height:110px; resize:vertical; }
+    .form input:focus, .form textarea:focus { border-color:#aaa198; }
+    .toast {
+      position:fixed; bottom:25px; left:50%; transform:translate(-50%,120px);
+      background:var(--accent); color:#fff; padding:12px 18px; font:12px Arial,sans-serif;
+      z-index:30; opacity:0; transition:.3s ease;
+    }
+    .toast.show { transform:translate(-50%,0); opacity:1; }
+    .fade-in { opacity:0; transform:translateY(18px); transition:opacity .65s ease, transform .65s ease; }
+    .fade-in.visible { opacity:1; transform:none; }
+    @media(max-width:750px){
+      .draw-area{grid-template-columns:1fr; justify-items:center; text-align:center}
+      .draw-copy p{margin:auto}
+    }
+
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <a class="logo" href="#">LUNA</a>
+    <nav class="navlinks">
+      <a href="#readings">Readings</a>
+      <a href="#about">About</a>
+      <a href="#book">Book</a>
+    </nav>
+  </header>
+
+  <main>
+    <section style="border-top:0">
+      <div class="hero">
+        <div>
+          <div class="eyebrow">Tarot · Intuition · Reflection</div>
+          <h1>Find clarity<br>in the cards.</h1>
+          <p>Thoughtful tarot readings designed to help you slow down, reflect, and see your next step with a little more clarity.</p>
+          <a class="button" href="#book">Book a reading</a>
+        </div>
+        <div class="moon" aria-hidden="true"><span>☾</span></div>
+      </div>
+    </section>
+
+    <section id="readings">
+      <div class="section-inner">
+        <div class="section-head">
+          <h2>Choose your<br>reading.</h2>
+          <p>Every session is private, intentional, and focused on the questions that matter to you.</p>
+        </div>
+        <div class="cards">
+          <article class="card reading-card" data-reading="One Question" data-price="₹799">
+            <div class="number">01 — QUICK READ</div>
+            <h3>One Question</h3>
+            <div class="price">30 min · ₹799</div>
+          </article>
+          <article class="card reading-card" data-reading="Full Reading" data-price="₹1,499">
+            <div class="number">02 — DEEP DIVE</div>
+            <h3>Full Reading</h3>
+            <div class="price">60 min · ₹1,499</div>
+          </article>
+          <article class="card reading-card" data-reading="Life Direction" data-price="₹1,999">
+            <div class="number">03 — PATH & PURPOSE</div>
+            <h3>Life Direction</h3>
+            <div class="price">90 min · ₹1,999</div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="daily-card">
+      <div class="section-inner">
+        <div class="section-head fade-in">
+          <h2>Your card<br>for today.</h2>
+          <p>Take a breath, think of what is on your mind, then reveal one card. The message is a prompt for reflection.</p>
+        </div>
+        <div class="draw-area fade-in">
+          <div class="tarot-card" id="tarotCard" role="button" tabindex="0" aria-label="Reveal your tarot card">
+            <div class="back">✦</div>
+            <div class="face">
+              <div class="face-symbol" id="cardSymbol">☾</div>
+              <strong id="cardName">The Moon</strong>
+              <div class="note" id="cardMessage" style="margin-top:8px">Trust what is beneath the noise.</div>
+            </div>
+          </div>
+          <div class="draw-copy">
+            <h3 id="drawTitle">One card. One moment.</h3>
+            <p id="drawText">Reveal the card to receive a small reflective message for the day.</p>
+            <button class="small-button" id="redrawBtn" type="button">Draw again</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="about">
+      <div class="section-inner">
+        <div class="about">
+          <h2>A quiet space<br>to look within.</h2>
+          <div>
+            <p>Tarot isn't about predicting a fixed future. It's a reflective practice that can help you explore possibilities, patterns, and the choices in front of you.</p>
+            <div class="note">Readings are for reflection and entertainment, not professional medical, legal, or financial advice.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="book">
+      <div class="section-inner cta">
+        <div class="eyebrow">Ready when you are</div>
+        <h2>Bring your question.<br>We'll read the cards.</h2>
+        <a class="button" href="mailto:hello@luna-reading.com">Book your reading</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>© 2026 LUNA TAROT</span>
+    <span>hello@luna-reading.com · Instagram @lunareads</span>
+  </footer>
+
+  <div class="modal" id="bookingModal" aria-hidden="true">
+    <div class="modal-box">
+      <button class="close" id="closeModal" aria-label="Close">×</button>
+      <div class="eyebrow">Private session</div>
+      <h3 id="modalTitle">Book a reading</h3>
+      <p id="modalSubtitle">Tell us a little about what you'd like to explore.</p>
+      <form class="form" id="bookingForm">
+        <input id="name" type="text" placeholder="Your name" required>
+        <input id="email" type="email" placeholder="Your email" required>
+        <textarea id="question" placeholder="What would you like guidance on?" required></textarea>
+        <button class="button" type="submit">Request booking</button>
+      </form>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const modal = document.getElementById('bookingModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalSubtitle = document.getElementById('modalSubtitle');
+    const toast = document.getElementById('toast');
+    let selectedReading = 'Full Reading';
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2600);
+    }
+
+    function openBooking(reading = selectedReading, price = '') {
+      selectedReading = reading;
+      modalTitle.textContent = 'Book: ' + reading;
+      modalSubtitle.textContent = price ? reading + ' · ' + price + ' — tell us a little about what you would like to explore.' : modalSubtitle.textContent;
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.getElementById('name').focus();
+    }
+
+    function closeBooking() {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
+    document.querySelectorAll('.reading-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.reading-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        openBooking(card.dataset.reading, card.dataset.price);
+      });
+    });
+
+    document.querySelector('.hero .button').addEventListener('click', e => {
+      e.preventDefault();
+      openBooking('Full Reading', '₹1,499');
+    });
+
+    document.querySelector('#book .button').addEventListener('click', e => {
+      e.preventDefault();
+      openBooking(selectedReading);
+    });
+
+    document.getElementById('closeModal').addEventListener('click', closeBooking);
+    modal.addEventListener('click', e => { if (e.target === modal) closeBooking(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBooking(); });
+
+    document.getElementById('bookingForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      showToast(`Thanks, ${name || 'there'} — your ${selectedReading} request is ready to send.`);
+      closeBooking();
+      e.target.reset();
+    });
+
+    const cards = [
+      ['The Moon', '☾', 'Not everything needs an answer tonight. Let intuition speak before certainty.'],
+      ['The Star', '✦', 'Keep going. A quieter form of hope is already taking shape.'],
+      ['The Sun', '☼', 'Clarity grows when you allow yourself to be seen as you are.'],
+      ['The Hermit', '♧', 'Step back from the noise. Your own perspective may be the missing piece.'],
+      ['The Empress', '❋', 'Create, nurture, and give yourself room to grow.'],
+      ['The Fool', '✧', 'A new beginning can be simple. Take the first honest step.']
+    ];
+
+    const tarotCard = document.getElementById('tarotCard');
+    const cardName = document.getElementById('cardName');
+    const cardSymbol = document.getElementById('cardSymbol');
+    const cardMessage = document.getElementById('cardMessage');
+    const drawTitle = document.getElementById('drawTitle');
+    const drawText = document.getElementById('drawText');
+
+    function drawCard() {
+      const card = cards[Math.floor(Math.random() * cards.length)];
+      cardName.textContent = card[0];
+      cardSymbol.textContent = card[1];
+      cardMessage.textContent = card[2];
+      tarotCard.classList.add('revealed');
+      drawTitle.textContent = card[0];
+      drawText.textContent = card[2];
+    }
+
+    tarotCard.addEventListener('click', drawCard);
+    tarotCard.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); drawCard(); }
+    });
+    document.getElementById('redrawBtn').addEventListener('click', drawCard);
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, {threshold: .12});
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // Make nav links smoothly scroll and close any open modal.
+    document.querySelectorAll('.navlinks a').forEach(link => {
+      link.addEventListener('click', closeBooking);
+    });
+  </script>
+
+</body>
+</html>
